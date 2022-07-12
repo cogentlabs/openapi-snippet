@@ -1,10 +1,10 @@
 {
-  "name": "openapi-snippet",
-  "version": "0.13.0",
+  "name": "@cogent/openapi-snippet",
+  "version": "0.13.0-cogent-1",
   "description": "Generates code snippets from Open API (previously Swagger) documents.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ErikWittern/openapi-snippet"
+    "url": "git+https://github.com/ErikWittern/openapi-snippet.git"
   },
   "keywords": [
     "HTTP",
@@ -29,5 +29,12 @@
     "tap-spec": "^2.2.2",
     "tape": "^4.10.1",
     "uglifyify": "^5.0.2"
+  },
+  "bugs": {
+    "url": "https://github.com/ErikWittern/openapi-snippet/issues"
+  },
+  "homepage": "https://github.com/ErikWittern/openapi-snippet#readme",
+  "directories": {
+    "test": "test"
   }
 }
