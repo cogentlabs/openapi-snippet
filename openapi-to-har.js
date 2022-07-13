@@ -30,7 +30,13 @@ const OpenAPISampler = require('openapi-sampler');
  * @param  {Object} queryParamValues  Optional: Values for the query parameters if present
  * @return {array}                    List of HAR Request objects for the endpoint
  */
-const createHar = function (openApi, path, method, queryParamValues, sampleMap) {
+const createHar = function (
+  openApi,
+  path,
+  method,
+  queryParamValues,
+  sampleMap
+) {
   // if the operational parameter is not provided, set it to empty object
   if (typeof queryParamValues === 'undefined') {
     queryParamValues = {};
@@ -100,7 +106,7 @@ const getPayloads = function (openApi, path, method, sampleMap) {
             { skipReadOnly: true },
             openApi
           );
-          if(sampleMap) {
+          if (sampleMap) {
             sample = sampleMap(path, method, sample);
           }
           return [
@@ -144,7 +150,7 @@ const getPayloads = function (openApi, path, method, sampleMap) {
           { skipReadOnly: true },
           openApi
         );
-        if(sampleMap) {
+        if (sampleMap) {
           sample = sampleMap(path, method, sample);
         }
         if (type === 'application/json') {
@@ -153,14 +159,22 @@ const getPayloads = function (openApi, path, method, sampleMap) {
             text: JSON.stringify(sample),
           });
         } else if (type === 'multipart/form-data') {
+          let resolvedSchema;
+          if (content.schema['$ref']) {
+            resolvedSchema = resolveRef(openApi, content.schema['$ref']);
+          }
           if (sample !== undefined) {
             const params = [];
             Object.keys(sample).forEach((key) => {
               let value = sample[key];
+              let fileName;
               if (typeof sample[key] !== 'string') {
                 value = JSON.stringify(sample[key]);
               }
-              params.push({ name: key, value: value });
+              if (resolvedSchema && resolvedSchema.properties[key]) {
+                fileName = resolvedSchema.properties[key].fileName;
+              }
+              params.push({ name: key, value: value, fileName });
             });
             payloads.push({
               mimeType: type,
@@ -279,7 +293,7 @@ const parseParametersToQuery = function (openApi, parameters, values) {
     if (typeof param.in !== 'undefined' && param.in.toLowerCase() === 'query') {
       // param.name is a safe key, because the spec defines
       // that name MUST be unique
-      if(!(values && values[param.name] === null)) {
+      if (!(values && values[param.name] === null)) {
         queryStrings[param.name] = getParameterValues(param, values);
       }
     }
