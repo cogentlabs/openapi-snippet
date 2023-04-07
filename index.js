@@ -9,7 +9,7 @@
 'use strict';
 
 const OpenAPIToHar = require('./openapi-to-har.js');
-const HTTPSnippet = require('httpsnippet');
+const { HTTPSnippet, availableTargets } = require('@cogent/httpsnippet');
 
 /**
  * Return snippets for endpoint identified using path and method in the given
@@ -21,14 +21,28 @@ const HTTPSnippet = require('httpsnippet');
  * @param {array} targets   List of languages to create snippets in, e.g,
  *                          ['cURL', 'Node']
  * @param {object} values   Optional: Values for the query parameters if present
+ * @param {function} sampleMap   Optional: Values for the query parameters if present
  */
-const getEndpointSnippets = function (openApi, path, method, targets, values) {
+const getEndpointSnippets = function (
+  openApi,
+  path,
+  method,
+  targets,
+  values,
+  sampleMap
+) {
   // if optional parameter is not provided, set it to empty object
   if (typeof values === 'undefined') {
     values = {};
   }
 
-  const hars = OpenAPIToHar.getEndpoint(openApi, path, method, values);
+  const hars = OpenAPIToHar.getEndpoint(
+    openApi,
+    path,
+    method,
+    values,
+    sampleMap
+  );
 
   const snippets = [];
   for (const har of hars) {
@@ -60,8 +74,8 @@ const getEndpointSnippets = function (openApi, path, method, targets, values) {
  * @param {array} targets   List of languages to create snippets in, e.g,
  *                          ['cURL', 'Node']
  */
-const getSnippets = function (openApi, targets) {
-  const endpointHarInfoList = OpenAPIToHar.getAll(openApi);
+const getSnippets = function (openApi, targets, sampleMap) {
+  const endpointHarInfoList = OpenAPIToHar.getAll(openApi, sampleMap);
 
   const results = [];
   for (let i in endpointHarInfoList) {
@@ -147,7 +161,7 @@ const formatTarget = function (targetStr) {
   const title = capitalizeFirstLetter(language);
   let library = targetStr.split('_')[1];
 
-  const validTargets = HTTPSnippet.availableTargets();
+  const validTargets = availableTargets();
   let validLanguage = false;
   let validLibrary = false;
   for (let i in validTargets) {

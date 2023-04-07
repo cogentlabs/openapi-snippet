@@ -1,4 +1,15 @@
+# Cogent specific info
+
+## Publishing
+
+The npm package has been scoped to @cogent so if you run `npm publish` locally, it will publish to the Cogent private repository.
+
+## Versioning
+
+To keep this in sync with the original repo, I suggest we use versioning like: {original version}-cogent-{internal sub version}
+
 # OpenAPI Snippet
+
 **Generates code snippets from Open API (previously Swagger) documents.**
 
 This package takes as input an OpenAPI v2.0 or v3.0.x document. It translates the document into an [HTTP Archive 1.2 request object](http://www.softwareishard.com/blog/har-12-spec/#request). It uses the [HTTP Snippet](https://github.com/Mashape/httpsnippet) library to generate code snippets for every API endpoint (URL path + HTTP method) defined in the specification in various languages & tools (`cURL`, `Node`, `Python`, `Ruby`, `Java`, `Go`, `C#`...), or for selected endpoints.

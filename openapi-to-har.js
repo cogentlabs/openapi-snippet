@@ -30,7 +30,13 @@ const OpenAPISampler = require('openapi-sampler');
  * @param  {Object} queryParamValues  Optional: Values for the query parameters if present
  * @return {array}                    List of HAR Request objects for the endpoint
  */
-const createHar = function (openApi, path, method, queryParamValues) {
+const createHar = function (
+  openApi,
+  path,
+  method,
+  queryParamValues,
+  sampleMap
+) {
   // if the operational parameter is not provided, set it to empty object
   if (typeof queryParamValues === 'undefined') {
     queryParamValues = {};
@@ -52,7 +58,7 @@ const createHar = function (openApi, path, method, queryParamValues) {
   let hars = [];
 
   // get payload data, if available:
-  const postDatas = getPayloads(openApi, path, method);
+  const postDatas = getPayloads(openApi, path, method, sampleMap);
 
   // For each postData create a snippet
   if (postDatas.length > 0) {
@@ -82,9 +88,10 @@ const createHar = function (openApi, path, method, queryParamValues) {
  * @param  {object} openApi
  * @param  {string} path
  * @param  {string} method
+ * @param  {function} sampleMap
  * @return {array}  A list of payload objects
  */
-const getPayloads = function (openApi, path, method) {
+const getPayloads = function (openApi, path, method, sampleMap) {
   if (typeof openApi.paths[path][method].parameters !== 'undefined') {
     for (let i in openApi.paths[path][method].parameters) {
       const param = openApi.paths[path][method].parameters[i];
@@ -94,11 +101,14 @@ const getPayloads = function (openApi, path, method) {
         typeof param.schema !== 'undefined'
       ) {
         try {
-          const sample = OpenAPISampler.sample(
+          let sample = OpenAPISampler.sample(
             param.schema,
             { skipReadOnly: true },
             openApi
           );
+          if (sampleMap) {
+            sample = sampleMap(path, method, sample);
+          }
           return [
             {
               mimeType: 'application/json',
@@ -135,25 +145,36 @@ const getPayloads = function (openApi, path, method) {
     ].forEach((type) => {
       const content = openApi.paths[path][method].requestBody.content[type];
       if (content && content.schema) {
-        const sample = OpenAPISampler.sample(
+        let sample = OpenAPISampler.sample(
           content.schema,
           { skipReadOnly: true },
           openApi
         );
+        if (sampleMap) {
+          sample = sampleMap(path, method, sample);
+        }
         if (type === 'application/json') {
           payloads.push({
             mimeType: type,
             text: JSON.stringify(sample),
           });
         } else if (type === 'multipart/form-data') {
+          let resolvedSchema;
+          if (content.schema['$ref']) {
+            resolvedSchema = resolveRef(openApi, content.schema['$ref']);
+          }
           if (sample !== undefined) {
             const params = [];
             Object.keys(sample).forEach((key) => {
               let value = sample[key];
+              let fileName;
               if (typeof sample[key] !== 'string') {
                 value = JSON.stringify(sample[key]);
               }
-              params.push({ name: key, value: value });
+              if (resolvedSchema && resolvedSchema.properties[key]) {
+                fileName = resolvedSchema.properties[key].fileName;
+              }
+              params.push({ name: key, value: value, fileName });
             });
             payloads.push({
               mimeType: type,
@@ -272,7 +293,9 @@ const parseParametersToQuery = function (openApi, parameters, values) {
     if (typeof param.in !== 'undefined' && param.in.toLowerCase() === 'query') {
       // param.name is a safe key, because the spec defines
       // that name MUST be unique
-      queryStrings[param.name] = getParameterValues(param, values);
+      if (!(values && values[param.name] === null)) {
+        queryStrings[param.name] = getParameterValues(param, values);
+      }
     }
   }
 
@@ -481,7 +504,7 @@ const getHeadersArray = function (openApi, path, method) {
   } else if (apiKeyAuthDef) {
     headers.push({
       name: apiKeyAuthDef.name,
-      value: 'REPLACE_KEY_VALUE',
+      value: 'apikey ' + 'REPLACE_KEY_VALUE',
     });
   } else if (oauthDef) {
     headers.push({
