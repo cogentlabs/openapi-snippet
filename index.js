@@ -9,7 +9,7 @@
 'use strict';
 
 const OpenAPIToHar = require('./openapi-to-har.js');
-const { HTTPSnippet, availableTargets } = require('@cogent/httpsnippet');
+const { HTTPSnippet, availableTargets } = require('@cogentlabs/httpsnippet');
 
 /**
  * Return snippets for endpoint identified using path and method in the given

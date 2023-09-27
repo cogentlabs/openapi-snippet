@@ -1,5 +1,5 @@
 {
-  "name": "@cogent/openapi-snippet",
+  "name": "@cogentlabs/openapi-snippet",
   "version": "0.13.0-cogent-2",
   "description": "Generates code snippets from Open API (previously Swagger) documents.",
   "repository": {
@@ -20,7 +20,7 @@
     "build": "mkdir -p dist && browserify -g uglifyify ./index.js > ./dist/openapisnippet.min.js"
   },
   "dependencies": {
-    "@cogent/httpsnippet": "^3.0.0-cogent-2",
+    "@cogentlabs/httpsnippet": "^3.0.0-cogent-2",
     "openapi-sampler": "^1.0.0-beta.14"
   },
   "devDependencies": {
