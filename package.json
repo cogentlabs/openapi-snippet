@@ -1,6 +1,6 @@
 {
   "name": "@cogentlabs/openapi-snippet",
-  "version": "0.13.0-cogent-2",
+  "version": "0.13.0-cogent-3",
   "description": "Generates code snippets from Open API (previously Swagger) documents.",
   "repository": {
     "type": "git",
