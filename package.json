@@ -20,7 +20,7 @@
     "build": "mkdir -p dist && browserify -g uglifyify ./index.js > ./dist/openapisnippet.min.js"
   },
   "dependencies": {
-    "@cogentlabs/httpsnippet": "^3.0.0-cogent-2",
+    "@cogentlabs/httpsnippet": "^3.0.0-cogent-5",
     "openapi-sampler": "^1.0.0-beta.14"
   },
   "devDependencies": {
